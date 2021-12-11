@@ -31,48 +31,53 @@ def generate_ssd_priors(specs: List[SSDSpec], image_size, clamp=True) -> torch.T
     """
     priors = []
     for spec in specs:
-        scale = image_size / spec.shrinkage
-        for j, i in itertools.product(range(spec.feature_map_size), repeat=2):
-            x_center = (i + 0.5) / scale
-            y_center = (j + 0.5) / scale
+        scale = (image_size[0] / spec.shrinkage, image_size[1] / spec.shrinkage)
+        # for j, i in itertools.product(range(spec.feature_map_size), repeat=2):
+        for j in range(spec.feature_map_size[0]):
+            for i in range(spec.feature_map_size[1]):
+                x_center = (i + 0.5) / scale[1]
+                y_center = (j + 0.5) / scale[0]
 
-            # small sized square box
-            size = spec.box_sizes.min
-            h = w = size / image_size
-            priors.append([
-                x_center,
-                y_center,
-                w,
-                h
-            ])
-
-            # big sized square box
-            size = math.sqrt(spec.box_sizes.max * spec.box_sizes.min)
-            h = w = size / image_size
-            priors.append([
-                x_center,
-                y_center,
-                w,
-                h
-            ])
-
-            # change h/w ratio of the small sized box
-            size = spec.box_sizes.min
-            h = w = size / image_size
-            for ratio in spec.aspect_ratios:
-                ratio = math.sqrt(ratio)
+                # small sized square box
+                size = spec.box_sizes.min
+                h = size / image_size[0]
+                w = size / image_size[1]
                 priors.append([
                     x_center,
                     y_center,
-                    w * ratio,
-                    h / ratio
+                    w,
+                    h
                 ])
+
+                # big sized square box
+                size = math.sqrt(spec.box_sizes.max * spec.box_sizes.min)
+                h = size / image_size[0]
+                w = size / image_size[1]
                 priors.append([
                     x_center,
                     y_center,
-                    w / ratio,
-                    h * ratio
+                    w,
+                    h
                 ])
+
+                # change h/w ratio of the small sized box
+                size = spec.box_sizes.min
+                h = size / image_size[0]
+                w = size / image_size[1]
+                for ratio in spec.aspect_ratios:
+                    ratio = math.sqrt(ratio)
+                    priors.append([
+                        x_center,
+                        y_center,
+                        w * ratio,
+                        h / ratio
+                    ])
+                    priors.append([
+                        x_center,
+                        y_center,
+                        w / ratio,
+                        h * ratio
+                    ])
 
     priors = torch.tensor(priors)
     if clamp:
@@ -100,6 +105,8 @@ def convert_locations_to_boxes(locations, priors, center_variance,
     # priors can have one dimension less.
     if priors.dim() + 1 == locations.dim():
         priors = priors.unsqueeze(0)
+    gpu_device = torch.device("cuda:0")
+    locations = locations.to(gpu_device)
     return torch.cat([
         locations[..., :2] * center_variance * priors[..., 2:] + priors[..., :2],
         torch.exp(locations[..., 2:] * size_variance) * priors[..., 2:]

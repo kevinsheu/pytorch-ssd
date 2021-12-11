@@ -42,6 +42,7 @@ class SSD(nn.Module):
         locations = []
         start_layer_index = 0
         header_index = 0
+        print(x.shape)
         for end_layer_index in self.source_layer_indexes:
             if isinstance(end_layer_index, GraphPath):
                 path = end_layer_index
@@ -56,17 +57,21 @@ class SSD(nn.Module):
                 path = None
             for layer in self.base_net[start_layer_index: end_layer_index]:
                 x = layer(x)
+                print(x.shape)
             if added_layer:
                 y = added_layer(x)
+                print(y.shape)
             else:
                 y = x
             if path:
                 sub = getattr(self.base_net[end_layer_index], path.name)
                 for layer in sub[:path.s1]:
                     x = layer(x)
+                    print(x.shape)
                 y = x
                 for layer in sub[path.s1:]:
                     x = layer(x)
+                    print(x.shape)
                 end_layer_index += 1
             start_layer_index = end_layer_index
             confidence, location = self.compute_header(header_index, y)
@@ -76,9 +81,11 @@ class SSD(nn.Module):
 
         for layer in self.base_net[end_layer_index:]:
             x = layer(x)
+            print(x.shape)
 
         for layer in self.extras:
             x = layer(x)
+            print(x.shape)
             confidence, location = self.compute_header(header_index, x)
             header_index += 1
             confidences.append(confidence)
