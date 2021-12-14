@@ -57,21 +57,21 @@ class SSD(nn.Module):
                 path = None
             for layer in self.base_net[start_layer_index: end_layer_index]:
                 x = layer(x)
-                print(x.shape)
+                # print(x.shape)
             if added_layer:
                 y = added_layer(x)
-                print(y.shape)
+                # print(y.shape)
             else:
                 y = x
             if path:
                 sub = getattr(self.base_net[end_layer_index], path.name)
                 for layer in sub[:path.s1]:
                     x = layer(x)
-                    print(x.shape)
+                    # print(x.shape)
                 y = x
                 for layer in sub[path.s1:]:
                     x = layer(x)
-                    print(x.shape)
+                    # print(x.shape)
                 end_layer_index += 1
             start_layer_index = end_layer_index
             confidence, location = self.compute_header(header_index, y)

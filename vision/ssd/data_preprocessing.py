@@ -51,7 +51,7 @@ class TestTransform:
 class PredictionTransform:
     def __init__(self, size, mean=0.0, std=1.0):
         self.transform = Compose([
-            Resize(size),
+            # Resize(size),
             SubtractMeans(mean),
             lambda img, boxes=None, labels=None: (img / std, boxes, labels),
             ToTensor()
