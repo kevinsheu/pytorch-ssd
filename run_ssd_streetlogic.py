@@ -7,7 +7,7 @@ import sys
 
 
 Y_OFFSET_START = 370
-X_OFFSET_START = 1000
+X_OFFSET_START = 700
 
 
 if len(sys.argv) < 4:
