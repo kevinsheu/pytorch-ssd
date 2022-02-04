@@ -223,7 +223,7 @@ def corner_form_to_center_form(boxes):
     ], boxes.dim() - 1)
 
 
-def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
+def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200, image_features=None):
     """
 
     Args:
@@ -253,15 +253,16 @@ def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
         )
         indexes = indexes[iou <= iou_threshold]
 
-    return box_scores[picked, :]
+    image_features_picked = [image_features[i] for i in picked]
+    return box_scores[picked, :], image_features_picked
 
 
 def nms(box_scores, nms_method=None, score_threshold=None, iou_threshold=None,
-        sigma=0.5, top_k=-1, candidate_size=200):
+        sigma=0.5, top_k=-1, candidate_size=200, images_features=None):
     if nms_method == "soft":
         return soft_nms(box_scores, score_threshold, sigma, top_k)
     else:
-        return hard_nms(box_scores, iou_threshold, top_k, candidate_size=candidate_size)
+        return hard_nms(box_scores, iou_threshold, top_k, candidate_size=candidate_size, image_features=images_features)
 
 
 def soft_nms(box_scores, score_threshold, sigma=0.5, top_k=-1):

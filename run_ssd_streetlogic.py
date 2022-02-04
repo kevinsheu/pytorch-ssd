@@ -27,7 +27,7 @@ predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=200)
 orig_image = cv2.imread(image_path)
 crop_image = orig_image[Y_OFFSET_START:Y_OFFSET_START+config.image_size[1], X_OFFSET_START:X_OFFSET_START+config.image_size[0]]
 image = cv2.cvtColor(crop_image, cv2.COLOR_BGR2RGB)
-boxes, labels, probs = predictor.predict(image, 10, 0.4)
+boxes, labels, probs, features = predictor.predict(image, 10, 0.4, output_image_features=True)
 
 cv2.rectangle(orig_image,
               (X_OFFSET_START, Y_OFFSET_START),

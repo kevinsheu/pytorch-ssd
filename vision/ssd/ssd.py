@@ -40,9 +40,9 @@ class SSD(nn.Module):
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         confidences = []
         locations = []
+        image_features = []
         start_layer_index = 0
         header_index = 0
-        print(x.shape)
         for end_layer_index in self.source_layer_indexes:
             if isinstance(end_layer_index, GraphPath):
                 path = end_layer_index
@@ -57,39 +57,35 @@ class SSD(nn.Module):
                 path = None
             for layer in self.base_net[start_layer_index: end_layer_index]:
                 x = layer(x)
-                # print(x.shape)
             if added_layer:
                 y = added_layer(x)
-                # print(y.shape)
             else:
                 y = x
             if path:
                 sub = getattr(self.base_net[end_layer_index], path.name)
                 for layer in sub[:path.s1]:
                     x = layer(x)
-                    # print(x.shape)
                 y = x
                 for layer in sub[path.s1:]:
                     x = layer(x)
-                    # print(x.shape)
                 end_layer_index += 1
             start_layer_index = end_layer_index
-            confidence, location = self.compute_header(header_index, y)
+            confidence, location, features = self.compute_header(header_index, y)
             header_index += 1
             confidences.append(confidence)
             locations.append(location)
+            image_features.append(features)
 
         for layer in self.base_net[end_layer_index:]:
             x = layer(x)
-            print(x.shape)
 
         for layer in self.extras:
             x = layer(x)
-            print(x.shape)
-            confidence, location = self.compute_header(header_index, x)
+            confidence, location, features = self.compute_header(header_index, x)
             header_index += 1
             confidences.append(confidence)
             locations.append(location)
+            image_features.append(features)
 
         confidences = torch.cat(confidences, 1)
         locations = torch.cat(locations, 1)
@@ -100,20 +96,24 @@ class SSD(nn.Module):
                 locations, self.priors, self.config.center_variance, self.config.size_variance
             )
             boxes = box_utils.center_form_to_corner_form(boxes)
-            return confidences, boxes
+            return confidences, boxes, image_features
         else:
             return confidences, locations
 
     def compute_header(self, i, x):
         confidence = self.classification_headers[i](x)
         confidence = confidence.permute(0, 2, 3, 1).contiguous()
+        features = x.permute(0, 2, 3, 1).contiguous()
+
         confidence = confidence.view(confidence.size(0), -1, self.num_classes)
+        features = features.view(features.size(0), -1, features.size(-1))
+        features = features.repeat_interleave(6, dim=1)
 
         location = self.regression_headers[i](x)
         location = location.permute(0, 2, 3, 1).contiguous()
         location = location.view(location.size(0), -1, 4)
 
-        return confidence, location
+        return confidence, location, features
 
     def init_from_base_net(self, model):
         self.base_net.load_state_dict(torch.load(model, map_location=lambda storage, loc: storage), strict=True)
