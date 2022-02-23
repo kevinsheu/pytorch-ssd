@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import torch
+from vision.utils import box_utils
 
 
 
@@ -18,18 +19,25 @@ class Tracker:
             self.iter += 1
             return np.arange(0, len(boxes))
 
+        track_boxes = torch.cat([torch.unsqueeze(t[0], 0) for t in self.tracks], dim=0)
+
         picked_tracks = []
         for box, embedding in zip(boxes, features):
             best_track = -1
             best_distance = 99999999999999999999999999999999999999
+            track_iou = box_utils.iou_of(track_boxes, box)
+
             for i, track in enumerate(self.tracks):
                 if embedding.shape != track[1].shape:
                     continue
                 if i in picked_tracks:
                     continue
-                print("comparing {},{} and {},{}".format(box[0], box[1], track[0][0], track[0][1]))
+                # Skip if track/measurement have no IoU
+
+
+                # print("comparing {},{} and {},{}".format(box[0], box[1], track[0][0], track[0][1]))
                 distance = np.linalg.norm(embedding.detach().numpy() - track[1].detach().numpy())
-                print(distance)
+                # print(distance)
 
                 if distance < 4 and distance < best_distance:
                     best_track = i

@@ -1,15 +1,18 @@
 import torch
 
 from ..utils import box_utils
-from .data_preprocessing import PredictionTransform
+from .data_preprocessing import PredictionTransform, PredictionTransformWithResize
 from ..utils.misc import Timer
 
 
 class Predictor:
     def __init__(self, net, size, mean=0.0, std=1.0, nms_method=None,
-                 iou_threshold=0.45, filter_threshold=0.01, candidate_size=200, sigma=0.5, device=None):
+                 iou_threshold=0.45, filter_threshold=0.01, candidate_size=200, sigma=0.5, device=None, resize=False):
         self.net = net
-        self.transform = PredictionTransform(size, mean, std)
+        if resize:
+            self.transform = PredictionTransformWithResize(size, mean, std)
+        else:
+            self.transform = PredictionTransform(size, mean, std)
         self.iou_threshold = iou_threshold
         self.filter_threshold = filter_threshold
         self.candidate_size = candidate_size
@@ -30,13 +33,13 @@ class Predictor:
         indexes = torch.nonzero(mask)
         selected_features = []
         for index in indexes[:, 0]:
-            count = 0
+            feature_map_index = 0
             running_sum = image_features[0].shape[0]
-            while index > running_sum:
-                count += 1
-                running_sum += image_features[count].shape[0]
-            offset = index - (running_sum - image_features[count].shape[0])
-            features = image_features[count][offset, :]
+            while index >= running_sum:
+                feature_map_index += 1
+                running_sum += image_features[feature_map_index].shape[0]
+            offset = index - running_sum + image_features[feature_map_index].shape[0]
+            features = image_features[feature_map_index][offset, :]
             selected_features.append(features)
 
         return selected_features

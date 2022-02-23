@@ -3,7 +3,7 @@ import numpy as np
 from vision.utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
 
 
-image_size = (600, 300) # w, h
+image_size = (1500, 300) # w, h
 image_mean = np.array([127, 127, 127])  # RGB layout
 image_std = 128.0
 iou_threshold = 0.45
@@ -40,7 +40,7 @@ specs_600_600 = [
     SSDSpec((2, 2), 300, SSDBoxSizes(285, 330), [2, 3])
 ]
 
-# 600x300
+# 900x300
 specs_900_300 = [
     SSDSpec((19, 57), 16, SSDBoxSizes(60, 105), [2, 3]),
     SSDSpec((10, 29), 32, SSDBoxSizes(105, 150), [2, 3]),
@@ -50,7 +50,7 @@ specs_900_300 = [
     SSDSpec((1, 2), 300, SSDBoxSizes(285, 330), [2, 3])
 ]
 
-# 600x300
+# 1200x300
 specs_1200_300 = [
     SSDSpec((19, 75), 16, SSDBoxSizes(60, 105), [2, 3]),
     SSDSpec((10, 38), 32, SSDBoxSizes(105, 150), [2, 3]),
@@ -60,5 +60,14 @@ specs_1200_300 = [
     SSDSpec((1, 3), 300, SSDBoxSizes(285, 330), [2, 3])
 ]
 
+# 1500x300
+specs_1500_300 = [
+    SSDSpec((19, 94), 16, SSDBoxSizes(60, 105), [2, 3]),
+    SSDSpec((10, 47), 32, SSDBoxSizes(105, 150), [2, 3]),
+    SSDSpec((5, 24), 64, SSDBoxSizes(150, 195), [2, 3]),
+    SSDSpec((3, 12), 100, SSDBoxSizes(195, 240), [2, 3]),
+    SSDSpec((2, 6), 150, SSDBoxSizes(240, 285), [2, 3]),
+    SSDSpec((1, 3), 300, SSDBoxSizes(285, 330), [2, 3])
+]
 
-priors = generate_ssd_priors(specs_600_300, image_size)
+priors = generate_ssd_priors(specs_1500_300, image_size)

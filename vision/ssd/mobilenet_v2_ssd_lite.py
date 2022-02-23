@@ -59,12 +59,13 @@ def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True
                extras, classification_headers, regression_headers, is_test=is_test, config=config)
 
 
-def create_mobilenetv2_ssd_lite_predictor(net, candidate_size=200, nms_method=None, sigma=0.5, device=torch.device('cpu')):
+def create_mobilenetv2_ssd_lite_predictor(net, candidate_size=200, nms_method=None, sigma=0.5, device=torch.device('cpu'), resize=False):
     predictor = Predictor(net, config.image_size, config.image_mean,
                           config.image_std,
                           nms_method=nms_method,
                           iou_threshold=config.iou_threshold,
                           candidate_size=candidate_size,
                           sigma=sigma,
-                          device=device)
+                          device=device,
+                          resize=resize)
     return predictor

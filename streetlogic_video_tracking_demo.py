@@ -10,15 +10,17 @@ import numpy as np
 
 
 Y_OFFSET_START = 370
-X_OFFSET_START = 700
+X_OFFSET_START = 100
 
 
 if len(sys.argv) < 4:
-    print('Usage: python run_ssd_example.py <model path> <label path> <video path>')
+    print('Usage: python run_ssd_example.py <model path> <label path> <video path> <output path>')
     sys.exit(0)
 model_path = sys.argv[1]
 label_path = sys.argv[2]
 video_path = sys.argv[3]
+
+output_path = video_path[:-4] + "_output.mp4"
 
 class_names = [name.strip() for name in open(label_path).readlines()]
 
@@ -44,14 +46,14 @@ colors_list = [
     (255, 0, 128),
 ]
 
+out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc('M', 'P', '4', 'V'), 10, (1920, 1080))
+
 cap = cv2.VideoCapture(video_path)
 while cap.isOpened():
     ret, frame = cap.read()
-    display_image = frame.copy()
     if not ret:
         break
-
-    print(frame.shape)
+    display_image = frame.copy()
 
     input_image = frame[Y_OFFSET_START:Y_OFFSET_START+config.image_size[1], X_OFFSET_START:X_OFFSET_START+config.image_size[0]]
     input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
@@ -68,17 +70,14 @@ while cap.isOpened():
     features_filtered = []
     probs_filtered = []
     for i in range(boxes.size(0)):
-        if class_names[labels[i]] != 'car' or probs[i] < 0.8:
+        if class_names[labels[i]] != 'car' or probs[i] < 0.7:
             continue
         boxes_filtered.append(boxes[i])
         labels_filtered.append(labels[i])
         features_filtered.append(features[i])
         probs_filtered.append(probs[i])
 
-    # boxes_filtered = np.array(boxes_filtered)
-    # labels_filtered = np.array(labels_filtered)
-    # probs_filtered = np.array(probs_filtered)
-    track_ids = tracker.process(boxes_filtered,features_filtered)
+    track_ids = tracker.process(boxes_filtered, features_filtered)
 
 
     for i in range(len(boxes_filtered)):
@@ -93,15 +92,19 @@ while cap.isOpened():
         color = colors_list[track_ids[i] % len(colors_list)]
 
         cv2.rectangle(display_image, (box_offset[0], box_offset[1]), (box_offset[2], box_offset[3]), color, 4)
-        label = f"ID {track_ids[i]} {probs_filtered[i]:.2f}"
+        label = "ID-{} F{}".format(track_ids[i], features_filtered[i].shape[0])
         cv2.putText(display_image, label,
-                    (box_offset[0] + 20, box_offset[1] + 40),
+                    (box_offset[0] + 10, int((box_offset[1] + box_offset[3])/2)),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,  # font scale
+                    0.4,  # font scale
                     color,
                     1)  # line type
 
 
-    cv2.imshow('frame', display_image)
-    if cv2.waitKey(0) == ord('q'):
-        break
+    out.write(display_image)
+
+    # cv2.imshow('frame', display_image)
+    # if cv2.waitKey(0) == ord('q'):
+    #     break
+
+out.release()
