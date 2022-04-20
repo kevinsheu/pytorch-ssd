@@ -3,8 +3,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-VOC_PATH = "/home/kevin_streetlogic_ai/data/VOC2012"
-OUTPUT_PATH = "/home/kevin_streetlogic_ai/code/output/"
+VOC_PATH = "/home/kevin/data/VOC2012"
+OUTPUT_PATH = "/home/kevin/code/output/"
 
 
 def ParseImageSetFile(set_file_path):

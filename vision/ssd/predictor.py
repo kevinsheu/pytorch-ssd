@@ -44,7 +44,7 @@ class Predictor:
 
         return selected_features
 
-    def predict(self, image, top_k=-1, prob_threshold=None, output_image_features=False):
+    def predict(self, image, top_k=-1, prob_threshold=None, output_image_features=False, return_all=False):
         cpu_device = torch.device("cpu")
         height, width, _ = image.shape
         image = self.transform(image)
@@ -53,7 +53,7 @@ class Predictor:
         with torch.no_grad():
             self.timer.start()
             scores, boxes, image_features = self.net.forward(images)
-            print("Inference time: ", self.timer.end())
+            # print("Inference time: ", self.timer.end())
         boxes = boxes[0]
         scores = scores[0]
         if not prob_threshold:
@@ -62,6 +62,8 @@ class Predictor:
         boxes = boxes.to(cpu_device)
         scores = scores.to(cpu_device)
         image_features = [x[0].to(cpu_device) for x in image_features]
+        if return_all:
+            return scores, boxes, image_features
         picked_box_probs = []
         picked_labels = []
         picked_features = []
