@@ -25,8 +25,8 @@ for image_index, image_name in enumerate(image_names):
     for cluster_file in cluster_files:
         cluster_id = int(os.path.basename(cluster_file)[:-4])
 
-        box_feature_files = glob.glob(os.path.join(EXTRACTED_DATA_PATH, image_name, "{}_*.pt".format(cluster_id)))
-        box_feature_ids = [os.path.basename(x).split("_")[1][:-3] for x in box_feature_files]
+        box_feature_files = glob.glob(os.path.join(EXTRACTED_DATA_PATH, image_name, "{}_*.npy".format(cluster_id)))
+        box_feature_ids = [os.path.basename(x).split("_")[1][:-4] for x in box_feature_files]
         # print(box_feature_files)
         # print(box_feature_ids)
         id_to_file_dict = {}
@@ -51,8 +51,8 @@ for image_index, image_name in enumerate(image_names):
 
             fm_file = id_to_file_dict[box_id]
             # print(fm_file)
-            fm_tensor = torch.load(fm_file)
-            feature_length.append(list(fm_tensor.shape)[0])
+            fm_array = np.load(fm_file)
+            feature_length.append(fm_array.shape[0])
 
     if image_index > 0 and image_index % 1000 == 0:
         print("finish {} of {}".format(image_index, len(image_names)))

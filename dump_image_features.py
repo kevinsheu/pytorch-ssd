@@ -133,14 +133,14 @@ for image_index, image_name_full in enumerate(os.listdir(image_dir)):
                                                       int(output_box_vectors[i][7])))
         file.close()
 
-        feature_vector_file = os.path.join(extracted_image_path, "{}_{}.pt".format(box_group, counter[box_group]))
-        feature_vector = image_features[int(output_box_vectors[i][6])][int(output_box_vectors[i][7])]
-        torch.save(feature_vector, feature_vector_file)
+        feature_vector_file = os.path.join(extracted_image_path, "{}_{}.npy".format(box_group, counter[box_group]))
+        feature_vector = image_features[int(output_box_vectors[i][6])][int(output_box_vectors[i][7])].numpy()
+        np.save(feature_vector_file, feature_vector)
 
         counter[box_group] += 1
 
-    cv2.imshow("t", image_original)
-    cv2.waitKey(0)
+    # cv2.imshow("t", image_original)
+    # cv2.waitKey(0)
     # cv2.imwrite("/home/kevin/example.png", image_original)
 
     if image_index > 0 and image_index % 100 == 0:
