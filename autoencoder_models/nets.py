@@ -65,6 +65,11 @@ class EmbddingDataset(Dataset):
     def __getitem__(self, idx):
         curr_row = self.df.iloc[idx]
 
+        if idx % 4 == 0:
+            self.get_diff_scale = True
+        else:
+            self.get_diff_scale = False
+
         if self.get_diff_scale:
             same_df = self.df[(curr_row['image'] == self.df['image']) &
                               (curr_row['cluster_id'] == self.df['cluster_id']) &
